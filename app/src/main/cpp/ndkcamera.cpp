@@ -12,6 +12,9 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 
+// Sources:
+// https://github.com/nihui/ncnn-android-nanodet
+
 #include "ndkcamera.h"
 
 #include <string>
@@ -180,7 +183,7 @@ NdkCamera::NdkCamera()
 
     // setup imagereader and its surface
     {
-        AImageReader_new(640, 480, AIMAGE_FORMAT_YUV_420_888, /*maxImages*/2, &image_reader);
+        AImageReader_new(1920, 1080, AIMAGE_FORMAT_YUV_420_888, /*maxImages*/2, &image_reader);
 
         AImageReader_ImageListener listener;
         listener.context = this;
@@ -231,7 +234,7 @@ int NdkCamera::open(int _camera_facing)
             ACameraMetadata* camera_metadata = 0;
             ACameraManager_getCameraCharacteristics(camera_manager, id, &camera_metadata);
 
-            // query faceing
+            // query facing
             acamera_metadata_enum_android_lens_facing_t facing = ACAMERA_LENS_FACING_FRONT;
             {
                 ACameraMetadata_const_entry e = { 0 };
@@ -254,15 +257,16 @@ int NdkCamera::open(int _camera_facing)
             camera_id = id;
 
             // query orientation
-            int orientation = 0;
-            {
-                ACameraMetadata_const_entry e = { 0 };
-                ACameraMetadata_getConstEntry(camera_metadata, ACAMERA_SENSOR_ORIENTATION, &e);
+//            int orientation = 0;
+//            {
+//                ACameraMetadata_const_entry e = { 0 };
+//                ACameraMetadata_getConstEntry(camera_metadata, ACAMERA_SENSOR_ORIENTATION, &e);
+//
+//                orientation = (int)e.data.i32[0];
+//            }
 
-                orientation = (int)e.data.i32[0];
-            }
-
-            camera_orientation = orientation;
+            // Changed value from orientation to 0
+            camera_orientation = 0;
 
             ACameraMetadata_free(camera_metadata);
 
@@ -474,52 +478,54 @@ void NdkCameraWindow::on_image_render(cv::Mat& rgb) const
 void NdkCameraWindow::on_image(const unsigned char* nv21, int nv21_width, int nv21_height) const
 {
     // resolve orientation from camera_orientation and accelerometer_sensor
-    {
-        if (!sensor_event_queue)
-        {
-            sensor_event_queue = ASensorManager_createEventQueue(sensor_manager, ALooper_prepare(ALOOPER_PREPARE_ALLOW_NON_CALLBACKS), NDKCAMERAWINDOW_ID, 0, 0);
+//    {
+//        if (!sensor_event_queue)
+//        {
+//            sensor_event_queue = ASensorManager_createEventQueue(sensor_manager, ALooper_prepare(ALOOPER_PREPARE_ALLOW_NON_CALLBACKS), NDKCAMERAWINDOW_ID, 0, 0);
+//
+//            ASensorEventQueue_enableSensor(sensor_event_queue, accelerometer_sensor);
+//        }
+//
+//        int id = ALooper_pollAll(0, 0, 0, 0);
+//        if (id == NDKCAMERAWINDOW_ID)
+//        {
+//            ASensorEvent e[8];
+//            ssize_t num_event = 0;
+//            while (ASensorEventQueue_hasEvents(sensor_event_queue) == 1)
+//            {
+//                num_event = ASensorEventQueue_getEvents(sensor_event_queue, e, 8);
+//                if (num_event < 0)
+//                    break;
+//            }
+//
+//            if (num_event > 0)
+//            {
+//                float acceleration_x = e[num_event - 1].acceleration.x;
+//                float acceleration_y = e[num_event - 1].acceleration.y;
+//                float acceleration_z = e[num_event - 1].acceleration.z;
+////                 __android_log_print(ANDROID_LOG_WARN, "NdkCameraWindow", "x = %f, y = %f, z = %f", x, y, z);
+//
+//                if (acceleration_y > 7)
+//                {
+//                    accelerometer_orientation = 0;
+//                }
+//                if (acceleration_x < -7)
+//                {
+//                    accelerometer_orientation = 90;
+//                }
+//                if (acceleration_y < -7)
+//                {
+//                    accelerometer_orientation = 180;
+//                }
+//                if (acceleration_x > 7)
+//                {
+//                    accelerometer_orientation = 270;
+//                }
+//            }
+//        }
+//    }
 
-            ASensorEventQueue_enableSensor(sensor_event_queue, accelerometer_sensor);
-        }
-
-        int id = ALooper_pollAll(0, 0, 0, 0);
-        if (id == NDKCAMERAWINDOW_ID)
-        {
-            ASensorEvent e[8];
-            ssize_t num_event = 0;
-            while (ASensorEventQueue_hasEvents(sensor_event_queue) == 1)
-            {
-                num_event = ASensorEventQueue_getEvents(sensor_event_queue, e, 8);
-                if (num_event < 0)
-                    break;
-            }
-
-            if (num_event > 0)
-            {
-                float acceleration_x = e[num_event - 1].acceleration.x;
-                float acceleration_y = e[num_event - 1].acceleration.y;
-                float acceleration_z = e[num_event - 1].acceleration.z;
-//                 __android_log_print(ANDROID_LOG_WARN, "NdkCameraWindow", "x = %f, y = %f, z = %f", x, y, z);
-
-                if (acceleration_y > 7)
-                {
-                    accelerometer_orientation = 0;
-                }
-                if (acceleration_x < -7)
-                {
-                    accelerometer_orientation = 90;
-                }
-                if (acceleration_y < -7)
-                {
-                    accelerometer_orientation = 180;
-                }
-                if (acceleration_x > 7)
-                {
-                    accelerometer_orientation = 270;
-                }
-            }
-        }
-    }
+    accelerometer_orientation = 0;
 
     // roi crop and rotate nv21
     int nv21_roi_x = 0;

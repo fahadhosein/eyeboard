@@ -12,6 +12,11 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 
+// Sources:
+// https://github.com/Tencent/ncnn
+// https://github.com/nihui/ncnn-android-nanodet
+// https://github.com/FeiGeChuanShu/ncnn-android-yolov8
+
 #ifndef YOLO_H
 #define YOLO_H
 
@@ -36,13 +41,11 @@ class Yolo
 public:
     Yolo();
 
-    int load(const char* modeltype, int target_size, const float* mean_vals, const float* norm_vals, bool use_gpu = false);
-
     int load(AAssetManager* mgr, const char* modeltype, int target_size, const float* mean_vals, const float* norm_vals, bool use_gpu = false);
 
     int detect(const cv::Mat& rgb, std::vector<Object>& objects, float prob_threshold = 0.4f, float nms_threshold = 0.5f);
 
-    int draw(cv::Mat& rgb, const std::vector<Object>& objects);
+    int draw(cv::Mat& rgb, const std::vector<Object>& objects, float iris[]);
 
 private:
     ncnn::Net yolo;

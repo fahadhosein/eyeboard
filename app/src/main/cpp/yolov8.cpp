@@ -12,7 +12,12 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 
-#include "yolo.h"
+// Sources:
+// https://github.com/Tencent/ncnn
+// https://github.com/nihui/ncnn-android-nanodet
+// https://github.com/FeiGeChuanShu/ncnn-android-yolov8
+
+#include "yolov8.h"
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -33,6 +38,7 @@ static float sigmoid(float x)
 {
     return 1.0f / (1.0f + fast_exp(-x));
 }
+
 static float intersection_area(const Object& a, const Object& b)
 {
     cv::Rect_<float> inter = a.rect & b.rect;
@@ -117,6 +123,7 @@ static void nms_sorted_bboxes(const std::vector<Object>& faceobjects, std::vecto
             picked.push_back(i);
     }
 }
+
 static void generate_grids_and_stride(const int target_w, const int target_h, std::vector<int>& strides, std::vector<GridAndStride>& grid_strides)
 {
     for (int i = 0; i < (int)strides.size(); i++)
@@ -137,6 +144,7 @@ static void generate_grids_and_stride(const int target_w, const int target_h, st
         }
     }
 }
+
 static void generate_proposals(std::vector<GridAndStride> grid_strides, const ncnn::Mat& pred, float prob_threshold, std::vector<Object>& objects)
 {
     const int num_points = grid_strides.size();
@@ -224,7 +232,6 @@ Yolo::Yolo()
     workspace_pool_allocator.set_size_compare_ratio(0.f);
 }
 
-
 int Yolo::load(AAssetManager* mgr, const char* modeltype, int _target_size, const float* _mean_vals, const float* _norm_vals, bool use_gpu)
 {
     yolo.clear();
@@ -246,8 +253,8 @@ int Yolo::load(AAssetManager* mgr, const char* modeltype, int _target_size, cons
 
     char parampath[256];
     char modelpath[256];
-    sprintf(parampath, "cardboard-1-sim-opt.param", modeltype);
-    sprintf(modelpath, "cardboard-1-sim-opt.bin", modeltype);
+    sprintf(parampath, "cardboard-%s-sim-opt.param", modeltype);
+    sprintf(modelpath, "cardboard-%s-sim-opt.bin", modeltype);
 
     yolo.load_param(mgr, parampath);
     yolo.load_model(mgr, modelpath);
@@ -354,7 +361,7 @@ int Yolo::detect(const cv::Mat& rgb, std::vector<Object>& objects, float prob_th
     return 0;
 }
 
-int Yolo::draw(cv::Mat& rgb, const std::vector<Object>& objects)
+int Yolo::draw(cv::Mat& rgb, const std::vector<Object>& objects, float iris[])
 {
     static const char* class_names[] = {
             "eye", "iris", "reflection"
@@ -416,6 +423,12 @@ int Yolo::draw(cv::Mat& rgb, const std::vector<Object>& objects)
         cv::Scalar textcc = (color[0] + color[1] + color[2] >= 381) ? cv::Scalar(0, 0, 0) : cv::Scalar(255, 255, 255);
 
         cv::putText(rgb, text, cv::Point(x, y + label_size.height), cv::FONT_HERSHEY_SIMPLEX, 0.5, textcc, 1);
+
+        if (class_names[obj.label] == "iris")
+        {
+            iris[0] = obj.rect.x;
+            iris[1] = obj.rect.y;
+        }
     }
 
     return 0;

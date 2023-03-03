@@ -11,54 +11,130 @@
 // under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
+
+// Sources:
+// https://github.com/Tencent/ncnn
+// https://github.com/nihui/ncnn-android-nanodet
+// https://github.com/FeiGeChuanShu/ncnn-android-yolov8
+
 package com.ecng.eyeboard
 
-import androidx.appcompat.app.AppCompatActivity
-import android.os.Bundle
-import android.widget.TextView
-import com.ecng.eyeboard.databinding.ActivityMainBinding
-
 import android.Manifest
-import android.app.Activity
 import android.content.pm.PackageManager
 import android.graphics.PixelFormat
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
-import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.View
 import android.view.WindowManager
 import android.widget.AdapterView
-import android.widget.Button
 import android.widget.Spinner
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import java.sql.Time
+import java.util.*
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
+    val timer = Timer()
+    private val yolo = YOLO()
+    private var spinnerMod: Spinner? = null
+    private var spinnerCurMod = 0
+    private var spinnerPro: Spinner? = null
+    private var spinnerCurPro = 0
+    private var cameraMod: SurfaceView? = null
+    private var cameraCurMod = 0
 
-    private lateinit var binding: ActivityMainBinding
-
-    override fun onCreate(savedInstanceState: Bundle?) {
+    /** Called when the activity is first created.  */
+    public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        cameraMod = findViewById<View>(R.id.cameraView) as SurfaceView
+        cameraMod!!.holder.setFormat(PixelFormat.RGBA_8888)
+        cameraMod!!.holder.addCallback(this)
 
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        spinnerPro = findViewById<View>(R.id.spinnerProcess) as Spinner
+        spinnerPro!!.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                arg0: AdapterView<*>?,
+                arg1: View,
+                position: Int,
+                id: Long
+            ) {
+                if (position != spinnerCurPro) {
+                    spinnerCurPro = position
+                    reloadModel()
+                }
+            }
 
-        // Example of a call to a native method
-        binding.sampleText.text = stringFromJNI()
+            override fun onNothingSelected(arg0: AdapterView<*>?) {}
+        }
+
+        spinnerMod = findViewById<View>(R.id.spinnerModel) as Spinner
+        spinnerMod!!.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                arg0: AdapterView<*>?,
+                arg1: View,
+                position: Int,
+                id: Long
+            ) {
+                if (position != spinnerCurMod) {
+                    spinnerCurMod = position
+                    reloadModel()
+                }
+            }
+
+            override fun onNothingSelected(arg0: AdapterView<*>?) {}
+        }
+        reloadModel()
+        val monitor = object : TimerTask() {
+            override fun run() {
+                val iris = yolo.iris()
+                Log.d("IRIS", "Coordinates =" + Arrays.toString(iris))
+            }
+        }
+        timer.schedule(monitor, 100, 100)
+
     }
 
-    /**
-     * A native method that is implemented by the 'eyeboard' native library,
-     * which is packaged with this application.
-     */
-    external fun stringFromJNI(): String
+    private fun reloadModel() {
+        val modelInit = yolo.loadModel(assets, spinnerCurMod, spinnerCurPro)
+        if (!modelInit) {
+            Log.e("MainActivity", "Unable to Load Model!")
+        }
+    }
+
+    override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
+        yolo.setOutputWindow(holder.surface)
+    }
+
+    override fun surfaceCreated(holder: SurfaceHolder) {}
+    override fun surfaceDestroyed(holder: SurfaceHolder) {}
+    public override fun onResume() {
+        super.onResume()
+        if (ContextCompat.checkSelfPermission(
+                applicationContext,
+                Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_DENIED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf<String>(Manifest.permission.CAMERA),
+                REQUEST_CAMERA
+            )
+        }
+        yolo.openCamera(cameraCurMod)
+    }
+
+    public override fun onPause() {
+        super.onPause()
+        yolo.closeCamera()
+    }
 
     companion object {
-        // Used to load the 'eyeboard' library on application startup.
-        init {
-            System.loadLibrary("eyeboard")
-        }
+        const val REQUEST_CAMERA = 100
     }
 }
