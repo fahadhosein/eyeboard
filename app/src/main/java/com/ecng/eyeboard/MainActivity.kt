@@ -23,23 +23,22 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.graphics.PixelFormat
 import android.os.Bundle
-import android.os.Handler
 import android.util.Log
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.View
 import android.view.WindowManager
 import android.widget.AdapterView
+import android.widget.RelativeLayout
 import android.widget.Spinner
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import java.sql.Time
-import java.util.*
+
 
 class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
-    val timer = Timer()
     private val yolo = YOLO()
+    private var canvasLayout: RelativeLayout? = null
     private var spinnerMod: Spinner? = null
     private var spinnerCurMod = 0
     private var spinnerPro: Spinner? = null
@@ -47,7 +46,8 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
     private var cameraMod: SurfaceView? = null
     private var cameraCurMod = 0
 
-    /** Called when the activity is first created.  */
+    /** Called when the activity is first created.**/
+
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -55,6 +55,10 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
         cameraMod = findViewById<View>(R.id.cameraView) as SurfaceView
         cameraMod!!.holder.setFormat(PixelFormat.RGBA_8888)
         cameraMod!!.holder.addCallback(this)
+
+        canvasLayout = findViewById(R.id.canvasView)
+        val canvas = CanvasActivity(this)
+        canvasLayout!!.addView(canvas)
 
         spinnerPro = findViewById<View>(R.id.spinnerProcess) as Spinner
         spinnerPro!!.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -90,14 +94,6 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
             override fun onNothingSelected(arg0: AdapterView<*>?) {}
         }
         reloadModel()
-        val monitor = object : TimerTask() {
-            override fun run() {
-                val iris = yolo.iris()
-                Log.d("IRIS", "Coordinates =" + Arrays.toString(iris))
-            }
-        }
-        timer.schedule(monitor, 100, 100)
-
     }
 
     private fun reloadModel() {
@@ -138,3 +134,4 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
         const val REQUEST_CAMERA = 100
     }
 }
+
