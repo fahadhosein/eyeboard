@@ -73,14 +73,13 @@
         app:layout_constraintStart_toStartOf="@+id/cameraView"
         app:layout_constraintTop_toTopOf="@+id/canvasView" />
 
-    <!--    <TextView-->
-    <!--        android:id="@+id/textView"-->
-    <!--        android:layout_width="wrap_content"-->
-    <!--        android:layout_height="wrap_content"-->
-    <!--        android:padding="8dp"-->
-    <!--        android:text="@string/app_name"-->
-    <!--        app:layout_constraintStart_toEndOf="@+id/gridView"-->
-    <!--        app:layout_constraintTop_toTopOf="parent" />-->
+    <Button
+        android:id="@+id/clearBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="CLEAR"
+        app:layout_constraintEnd_toEndOf="@+id/cameraView"
+        app:layout_constraintTop_toTopOf="@+id/spinnerModel" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

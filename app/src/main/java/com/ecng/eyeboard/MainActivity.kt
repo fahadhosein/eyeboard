@@ -29,6 +29,7 @@ import android.view.SurfaceView
 import android.view.View
 import android.view.WindowManager
 import android.widget.AdapterView
+import android.widget.Button
 import android.widget.RelativeLayout
 import android.widget.Spinner
 import androidx.appcompat.app.AppCompatActivity
@@ -38,6 +39,7 @@ import androidx.core.content.ContextCompat
 
 class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
     private val yolo = YOLO()
+    private var clearBtn: Button? = null
     private var canvasLayout: RelativeLayout? = null
     private var spinnerMod: Spinner? = null
     private var spinnerCurMod = 0
@@ -45,6 +47,7 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
     private var spinnerCurPro = 0
     private var cameraMod: SurfaceView? = null
     private var cameraCurMod = 0
+
 
     /** Called when the activity is first created.**/
 
@@ -59,6 +62,13 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
         canvasLayout = findViewById(R.id.canvasView)
         val canvas = CanvasActivity(this)
         canvasLayout!!.addView(canvas)
+
+        clearBtn = findViewById(R.id.clearBtn)
+        clearBtn!!.setOnClickListener {
+            val intent = intent
+            finish()
+            startActivity(intent)
+        }
 
         spinnerPro = findViewById<View>(R.id.spinnerProcess) as Spinner
         spinnerPro!!.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
