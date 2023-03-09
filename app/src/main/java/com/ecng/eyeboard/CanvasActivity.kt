@@ -15,31 +15,40 @@ class CanvasActivity(context: Context?) : View(context) {
 //    private val timer = Timer()
     private val yolo = YOLO()
     private lateinit var iris: FloatArray
+    private  val initX = FloatArray(7)
+    private  val initY = FloatArray(7)
     private var paint: Paint = Paint()
     private var dot: Paint = Paint()
+    private var dot2: Paint = Paint()
     private var path: Path = Path()
     private var xPos: Float = 0.0f
     private var yPos: Float = 0.0f
+    private var xScale: Float = 0.0f
+    private var yScale: Float = 0.0f
     private var i = 0
-    private var initX = 0.0F
-    private var initY = 0.0F
 
     init {
         paint.isAntiAlias = true
         paint.color = Color.GREEN
         paint.strokeJoin = Paint.Join.ROUND
         paint.style = Paint.Style.STROKE
-        paint.strokeWidth = 20F
+        paint.strokeWidth = 10F
 
         dot.isAntiAlias = true
         dot.color = Color.RED
         dot.strokeJoin = Paint.Join.ROUND
         dot.style = Paint.Style.STROKE
-        dot.strokeWidth = 30F
+        dot.strokeWidth = 20F
+
+        dot2.isAntiAlias = true
+        dot2.color = Color.CYAN
+        dot2.strokeJoin = Paint.Join.ROUND
+        dot2.style = Paint.Style.STROKE
+        dot2.strokeWidth = 20F
 
     }
 
-    fun irisPos(): FloatArray? {
+    private fun irisPos(): FloatArray? {
 //        val monitor = object : TimerTask() {
 //            override fun run() {
                 iris = yolo.iris()
@@ -57,20 +66,58 @@ class CanvasActivity(context: Context?) : View(context) {
         canvas.drawPoint(1300F, 500F, dot)
         canvas.drawPoint(600F, 1100F, dot)
         canvas.drawPoint(1300F, 1100F, dot)
+
+        canvas.drawPoint(700F, 600F, dot2)
+        canvas.drawPoint(800F, 600F, dot2)
+        canvas.drawPoint(900F, 600F, dot2)
+        canvas.drawPoint(1000F, 600F, dot2)
+        canvas.drawPoint(1100F, 600F, dot2)
+        canvas.drawPoint(1200F, 600F, dot2)
+
+        canvas.drawPoint(700F, 700F, dot2)
+        canvas.drawPoint(800F, 700F, dot2)
+        canvas.drawPoint(900F, 700F, dot2)
+        canvas.drawPoint(1000F, 700F, dot2)
+        canvas.drawPoint(1100F, 700F, dot2)
+        canvas.drawPoint(1200F, 700F, dot2)
+
+        canvas.drawPoint(700F, 800F, dot2)
+        canvas.drawPoint(800F, 800F, dot2)
+        canvas.drawPoint(900F, 800F, dot2)
+        canvas.drawPoint(1000F, 800F, dot2)
+        canvas.drawPoint(1100F, 800F, dot2)
+        canvas.drawPoint(1200F, 800F, dot2)
+
+        canvas.drawPoint(700F, 900F, dot2)
+        canvas.drawPoint(800F, 900F, dot2)
+        canvas.drawPoint(900F, 900F, dot2)
+        canvas.drawPoint(1000F, 900F, dot2)
+        canvas.drawPoint(1100F, 900F, dot2)
+        canvas.drawPoint(1200F, 900F, dot2)
+
+        canvas.drawPoint(700F, 1000F, dot2)
+        canvas.drawPoint(800F, 1000F, dot2)
+        canvas.drawPoint(900F, 1000F, dot2)
+        canvas.drawPoint(1000F, 1000F, dot2)
+        canvas.drawPoint(1100F, 1000F, dot2)
+        canvas.drawPoint(1200F, 1000F, dot2)
+
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
         irisPos()
-        if(i==0)
+        if(i<7)
         {
-            initX = iris[0]
-            initY = iris[1]
+            initX[i] = iris[0]
+            initY[i] = iris[1]
             i++
-
         } else {
-            xPos = (kotlin.math.abs(iris[0] - initX) * 2.5F ) + initX
-            yPos = (kotlin.math.abs(iris[1] - initY) * 4.5F ) + initY
+            xScale = initX[3]/initX[0]
+            yScale = initY[6]/initY[0]
+            xPos = (kotlin.math.abs(iris[0] - initX[0]) * xScale ) + initX[0]
+            yPos = (kotlin.math.abs(iris[1] - initY[0]) * yScale ) + initY[0]
             Log.d("POINTER", "Coordinates = $xPos, $yPos")
+            Log.d("SCALE", "Values = $xScale, $yScale")
         }
 
         when (event.action) {
@@ -82,7 +129,7 @@ class CanvasActivity(context: Context?) : View(context) {
                 path.lineTo(xPos, yPos)
             }
             MotionEvent.ACTION_UP -> {
-                Runtime.getRuntime().exec("adb shell input tap")
+//                Runtime.getRuntime().exec("adb shell input tap")
             }
             else -> return false
         }
