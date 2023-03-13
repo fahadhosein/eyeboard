@@ -33,9 +33,5 @@ google-services.json
 
 # Android Profiling
 *.hprof
-
-# Model Weights (See OneDrive)
-/app/src/main/assets/cardboard-1-sim-opt.bin
-/app/src/main/assets/cardboard-1-sim-opt.param
-/app/src/main/assets/cardboard-2-sim-opt.bin
-/app/src/main/assets/cardboard-2-sim-opt.param
+/app/src/test/
+/app/src/androidTest/
