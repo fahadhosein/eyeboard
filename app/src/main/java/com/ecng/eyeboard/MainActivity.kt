@@ -32,13 +32,15 @@ import android.widget.AdapterView
 import android.widget.Button
 import android.widget.RelativeLayout
 import android.widget.Spinner
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 
-
 class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
     private val yolo = YOLO()
+    private lateinit var canvasActivity: CanvasActivity
+    private lateinit var count: TextView
     private var clearBtn: Button? = null
     private var canvasLayout: RelativeLayout? = null
     private var spinnerMod: Spinner? = null
@@ -47,25 +49,25 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
     private var spinnerCurPro = 0
     private var cameraMod: SurfaceView? = null
     private var cameraCurMod = 0
-
-
-    /** Called when the activity is first created.**/
+    private var increment: Button? = null
+    private var decrement: Button? = null
+    var n = 1;
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+
         cameraMod = findViewById<View>(R.id.cameraView) as SurfaceView
         cameraMod!!.holder.setFormat(PixelFormat.RGBA_8888)
         cameraMod!!.holder.addCallback(this)
 
         canvasLayout = findViewById(R.id.canvasView)
-        val canvas = CanvasActivity(this)
-        canvasLayout!!.addView(canvas)
+        canvasActivity = CanvasActivity(this)
+        canvasLayout!!.addView(canvasActivity)
 
         clearBtn = findViewById(R.id.clearBtn)
         clearBtn!!.setOnClickListener {
-            val intent = intent
             finish()
             startActivity(intent)
         }
@@ -103,6 +105,31 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
 
             override fun onNothingSelected(arg0: AdapterView<*>?) {}
         }
+
+        count = findViewById(R.id.count)
+        count.text = n.toString()
+        canvasActivity.setN(n)
+
+        increment = findViewById(R.id.incrementBtn)
+        increment!!.setOnClickListener{
+            if (n>=12)
+                n=9
+            else
+                n++
+            count.text = n.toString()
+            canvasActivity.setN(n)
+        }
+
+        decrement = findViewById(R.id.decrementBtn)
+        decrement!!.setOnClickListener{
+            if (n<=1)
+                n=1
+            else
+                n--
+            count.text = n.toString()
+            canvasActivity.setN(n)
+        }
+
         reloadModel()
     }
 
@@ -118,7 +145,9 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
     }
 
     override fun surfaceCreated(holder: SurfaceHolder) {}
+
     override fun surfaceDestroyed(holder: SurfaceHolder) {}
+
     public override fun onResume() {
         super.onResume()
         if (ContextCompat.checkSelfPermission(

@@ -30,12 +30,14 @@ struct Object
     int label;
     float prob;
 };
+
 struct GridAndStride
 {
     int grid0;
     int grid1;
     int stride;
 };
+
 class Yolo
 {
 public:

@@ -1,13 +1,14 @@
 <resources>
-    <string name="app_name">EyeBoard: Version 0.0</string>
+    <string name="app_name">EyeBoard: Version 1.0</string>
 
     <string-array name="current_proc">
         <item>CPU</item>
         <item>GPU</item>
     </string-array>
     <string-array name="current_mod">
-        <item>CardBoard 1</item>
-        <item>CardBoard 2</item>
+        <item>v8m</item>
+        <item>v8s</item>
+        <item>v8n</item>
     </string-array>
 
 </resources>

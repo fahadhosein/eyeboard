@@ -20,21 +20,14 @@
 #include <android/asset_manager_jni.h>
 #include <android/native_window_jni.h>
 #include <android/native_window.h>
-
 #include <android/log.h>
-
 #include <jni.h>
-
 #include <string>
 #include <vector>
-
 #include <platform.h>
 #include <benchmark.h>
-
 #include "yolov8.h"
-
 #include "ndkcamera.h"
-
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
@@ -116,9 +109,10 @@ static int draw_fps(cv::Mat& rgb)
 }
 
 static Yolo* g_yolo = 0;
+
 static ncnn::Mutex lock;
-float irisX;
-float irisY;
+
+float iris[2];
 
 class MyNdkCamera : public NdkCameraWindow
 {
@@ -134,11 +128,8 @@ void MyNdkCamera::on_image_render(cv::Mat& rgb) const
         if (g_yolo)
         {
             std::vector<Object> objects;
-            float iris[2];
             g_yolo->detect(rgb, objects);
             g_yolo->draw(rgb, objects, iris);
-            irisX = iris[0];
-            irisY = iris[1];
         }
         else
         {
@@ -151,28 +142,22 @@ void MyNdkCamera::on_image_render(cv::Mat& rgb) const
 
 static MyNdkCamera* g_camera = 0;
 
-
 extern "C" {
     JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved)
     {
         __android_log_print(ANDROID_LOG_DEBUG, "ncnn", "JNI_OnLoad");
-
         g_camera = new MyNdkCamera;
-
         return JNI_VERSION_1_4;
     }
 
     JNIEXPORT void JNI_OnUnload(JavaVM* vm, void* reserved)
     {
         __android_log_print(ANDROID_LOG_DEBUG, "ncnn", "JNI_OnUnload");
-
         {
             ncnn::MutexLockGuard g(lock);
-
             delete g_yolo;
             g_yolo = 0;
         }
-
         delete g_camera;
         g_camera = 0;
     }
@@ -183,31 +168,29 @@ extern "C" {
         {
             return JNI_FALSE;
         }
-
         AAssetManager* mgr = AAssetManager_fromJava(env, assetManager);
-
         __android_log_print(ANDROID_LOG_DEBUG, "ncnn", "loadModel %p", mgr);
-
         const char* modeltypes[] =
                 {
-                        "1",
-                        "2",
+                        "m",
+                        "s",
+                        "n",
                 };
-
         const int target_sizes[] =
                 {
                         320,
                         320,
+                        320,
                 };
-
         const float mean_vals[][3] =
                 {
                         {103.53f, 116.28f, 123.675f},
                         {103.53f, 116.28f, 123.675f},
+                        {103.53f, 116.28f, 123.675f},
                 };
-
         const float norm_vals[][3] =
                 {
+                        { 1 / 255.f, 1 / 255.f, 1 / 255.f },
                         { 1 / 255.f, 1 / 255.f, 1 / 255.f },
                         { 1 / 255.f, 1 / 255.f, 1 / 255.f },
                 };
@@ -215,11 +198,9 @@ extern "C" {
         const char* modeltype = modeltypes[(int)modelid];
         int target_size = target_sizes[(int)modelid];
         bool use_gpu = (int)cpugpu == 1;
-
         // reload
         {
             ncnn::MutexLockGuard g(lock);
-
             if (use_gpu && ncnn::get_gpu_count() == 0)
             {
                 // no gpu
@@ -233,7 +214,6 @@ extern "C" {
                 g_yolo->load(mgr, modeltype, target_size, mean_vals[(int)modelid], norm_vals[(int)modelid], use_gpu);
             }
         }
-
         return JNI_TRUE;
     }
 
@@ -242,11 +222,8 @@ extern "C" {
     {
         if (facing < 0 || facing > 1)
             return JNI_FALSE;
-
         __android_log_print(ANDROID_LOG_DEBUG, "ncnn", "openCamera %d", facing);
-
         g_camera->open((int)facing);
-
         return JNI_TRUE;
     }
 
@@ -254,9 +231,7 @@ extern "C" {
     JNIEXPORT jboolean Java_com_ecng_eyeboard_YOLO_closeCamera(JNIEnv* env, jobject thiz)
     {
         __android_log_print(ANDROID_LOG_DEBUG, "ncnn", "closeCamera");
-
         g_camera->close();
-
         return JNI_TRUE;
     }
 
@@ -264,29 +239,16 @@ extern "C" {
     JNIEXPORT jboolean Java_com_ecng_eyeboard_YOLO_setOutputWindow(JNIEnv* env, jobject thiz, jobject surface)
     {
         ANativeWindow* win = ANativeWindow_fromSurface(env, surface);
-
         __android_log_print(ANDROID_LOG_DEBUG, "ncnn", "setOutputWindow %p", win);
-
         g_camera->set_window(win);
-
         return JNI_TRUE;
     }
+
     JNIEXPORT jfloatArray JNICALL Java_com_ecng_eyeboard_YOLO_iris(JNIEnv *env, jobject thiz)
     {
-        jfloatArray irisJ;
-
-        float* data;
-        data = static_cast<float *>(malloc(sizeof(float) * 2));
-
-        data[0] = irisX;
-        data[1] = irisY;
-
-
-        irisJ = env->NewFloatArray(2);
-        env->SetFloatArrayRegion(irisJ, 0, 2, data);
-        free(data);
-        return irisJ;
-
+        jfloatArray jArray = env->NewFloatArray(2);
+        env->SetFloatArrayRegion(jArray, 0, 2, iris);
+        return jArray;
     }
 
 }

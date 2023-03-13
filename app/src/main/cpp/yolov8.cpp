@@ -18,10 +18,8 @@
 // https://github.com/FeiGeChuanShu/ncnn-android-yolov8
 
 #include "yolov8.h"
-
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-
 #include "cpu.h"
 
 static float fast_exp(float x)
@@ -253,8 +251,8 @@ int Yolo::load(AAssetManager* mgr, const char* modeltype, int _target_size, cons
 
     char parampath[256];
     char modelpath[256];
-    sprintf(parampath, "cardboard-%s-sim-opt.param", modeltype);
-    sprintf(modelpath, "cardboard-%s-sim-opt.bin", modeltype);
+    sprintf(parampath, "v8%s-640-sim-opt.param", modeltype);
+    sprintf(modelpath, "v8%s-640-sim-opt.bin", modeltype);
 
     yolo.load_param(mgr, parampath);
     yolo.load_model(mgr, modelpath);
