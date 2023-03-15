@@ -114,5 +114,13 @@
         app:layout_constraintEnd_toStartOf="@+id/incrementBtn"
         app:layout_constraintTop_toTopOf="@+id/decrementBtn" />
 
+    <TextView
+        android:id="@+id/instance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="TextView"
+        app:layout_constraintEnd_toEndOf="@+id/cameraView"
+        app:layout_constraintTop_toTopOf="@+id/textView3" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

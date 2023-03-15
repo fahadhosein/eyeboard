@@ -11,6 +11,7 @@ import java.io.FileOutputStream
 import java.io.FileWriter
 import java.io.IOException
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.math.sqrt
 
@@ -30,6 +31,7 @@ class CanvasActivity(context: Context?) : View(context) {
     private var yScale: Float = 0F
     private var i = 0
     private var n = 0
+    private var rnd = 0
 
     init {
         paint.isAntiAlias = true
@@ -125,10 +127,12 @@ class CanvasActivity(context: Context?) : View(context) {
                     Log.d("POINTER", "Coordinates = $xPos, $yPos")
                     Log.d("SCALE", "Values = $xScale, $yScale")
                     path.addCircle(xPos, yPos, 2F, Path.Direction.CW)
-                    val data = LocalDateTime.now().toString() +
-                            "-- Point= " + n.toString() +
-                            "-- Accuracy= " + checkPoint(xPos, yPos, n) +
-                            "%-- Coordinates= [" + String.format("%.2f", xPos) +
+                    val format = DateTimeFormatter.ofPattern("dd-MM-yy HH:mm:ss")
+                    val data = LocalDateTime.now().format(format).toString() +
+                            " | ID= " + rnd.toString() +
+                            " | Point= " + n.toString() +
+                            " | Accuracy= " + checkPoint(xPos, yPos, n) +
+                            "% | Coordinates= [" + String.format("%.2f", xPos) +
                             ", " + String.format("%.2f", yPos) + "]\n"
 //                    Log.d("DATA", data)
                     writeData(data, "data.txt")
@@ -185,8 +189,11 @@ class CanvasActivity(context: Context?) : View(context) {
         fileWriter.close()
     }
 
-    fun setN(N: Int){
+    fun setN(N: Int) {
         n = N
+    }
+    fun setRnd(Rnd : Int) {
+        rnd = Rnd
     }
 
     companion object {

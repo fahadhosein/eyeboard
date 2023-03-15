@@ -36,11 +36,13 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import kotlin.random.Random
 
 class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
     private val yolo = YOLO()
     private lateinit var canvasActivity: CanvasActivity
     private lateinit var count: TextView
+    private lateinit var instance: TextView
     private var clearBtn: Button? = null
     private var canvasLayout: RelativeLayout? = null
     private var spinnerMod: Spinner? = null
@@ -51,6 +53,7 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
     private var cameraCurMod = 0
     private var increment: Button? = null
     private var decrement: Button? = null
+    val rnds = Random.nextInt(1, 101)
     var n = 1;
 
     public override fun onCreate(savedInstanceState: Bundle?) {
@@ -105,6 +108,10 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
 
             override fun onNothingSelected(arg0: AdapterView<*>?) {}
         }
+
+        instance = findViewById(R.id.instance)
+        instance.text = rnds.toString()
+        canvasActivity.setRnd(rnds)
 
         count = findViewById(R.id.count)
         count.text = n.toString()
