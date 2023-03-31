@@ -101,18 +101,18 @@
         android:layout_height="50dp"
         android:layout_marginEnd="8dp"
         android:text="-"
-        app:layout_constraintEnd_toStartOf="@+id/count"
+        app:layout_constraintEnd_toStartOf="@+id/incrementBtn"
         app:layout_constraintTop_toTopOf="@+id/incrementBtn" />
 
     <TextView
         android:id="@+id/count"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
+        android:layout_marginTop="125dp"
+        android:layout_marginEnd="110dp"
         android:text="TextView"
-        app:layout_constraintBottom_toBottomOf="@+id/decrementBtn"
-        app:layout_constraintEnd_toStartOf="@+id/incrementBtn"
-        app:layout_constraintTop_toTopOf="@+id/decrementBtn" />
+        app:layout_constraintEnd_toEndOf="@+id/canvasView"
+        app:layout_constraintTop_toTopOf="@+id/canvasView" />
 
     <TextView
         android:id="@+id/instance"
